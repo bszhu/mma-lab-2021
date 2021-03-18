@@ -76,6 +76,7 @@ def get_sift_features(im_list):
     print 'Generating SIFT features for [', total, '] images ...'
     bar.start()
     for im_name in im_list:
+        print(im_name)
         bar.update(count)
         # load grayscale image
         im = cv2.imread(im_name, 0)
