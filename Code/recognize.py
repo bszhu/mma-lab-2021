@@ -11,127 +11,54 @@ import image_search
 import os.path
 import metadata_distance
 
-# global variables
-sift_candidates = None
-harris_candidates = None
-colorhist_candidates = None
-geo_candidates = None
 
 # Command line parsing is handled by the ArgumentParser object
 
-features = ['sift', 'colorhist', 'harris', 'geo', 'all']
-
-parser = argparse.ArgumentParser(
-    description="Query tool to query the database created by the database tool (dbt.py). Retrieve images based on image content and metadata.",
-    formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument("database", help="Path to the database to execute the query on.")
-parser.add_argument("query", help="Query image")
-parser.add_argument("feature", help="The type of feature to get results on. Chose from " + str(features))
-default_images_folder = os.path.realpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../Images/joint'))
-parser.add_argument("--images", help="The folder used to create the database images. Used for displaying results.",
-                    default=default_images_folder)
-
-args = parser.parse_args()
-
-# Get file name without extension
-base = os.path.splitext(args.database)[0]
-
-
-def feature_active(name):
-    """ Check if feature 'name' is active
-
-    i.e. the feature has been selected via a command line option to be used for processing"""
-    return (args.feature == name or args.feature == 'all')
-
-
 # Starting point of the script
 # =======================================
+def recognize_monument(query_images):
 
-if __name__ == '__main__':
-
-    print '\nMulti Media Analysis Query Tool'
+    print 'Monument Recognition Tool'
     print '================================\n'
-    print "Query the database with [", args.query, "] for [", args.feature, "] features..."
-    db_name = args.database
-    search = image_search.Searcher(db_name)
-    if feature_active('sift'):
-        print 'Loading SIFT vocabulary ...'
-        fname = base + '_sift_vocabulary.pkl'
-        # Load the vocabulary to project the features of our query image on
-        with open(fname, 'rb') as f:
-            sift_vocabulary = pickle.load(f)
+    search = image_search.Searcher('db/invention_sift_DB.db')
+    print 'Loading SIFT vocabulary ...'
+    fname = 'db/invention_sift_DB_sift_vocabulary.pkl'
+    # Load the vocabulary to project the features of our query images on
+    with open(fname, 'rb') as f:
+        sift_vocabulary = pickle.load(f)
+    print 'Computing SIFT features per query image ...'
+    sift = cv2.xfeatures2d.SIFT_create()
+    sift_queries = []
+    for query_image in query_images:
+        kp, desc = sift.detectAndCompute(query_image, None)
+        sift_queries.append(desc)
 
-        sift_query = ft.get_sift_features([args.query])[args.query]
-        # Get a histogram of visual words for the query image
-        image_words = sift_vocabulary.project(sift_query)
-        print 'Query database with a SIFT histogram...'
-        # Use the histogram to search the database
-        sift_candidates = search.query_iw('sift', image_words)
+    # Get a histogram of visual words for the query image
+    image_words_list = []
+    for sift_query in sift_queries:
+        image_words_list.append(sift_vocabulary.project(sift_query))
+    print 'Query database with a SIFT histogram...'
+    # Use the histogram to search the database
+    sift_candidates_list = []
+    for image_words in image_words_list:
+        sift_candidates_list.append(search.query_iw('sift', image_words))
 
-    if feature_active('harris'):
-        print 'Loading Harris vocabulary ...'
-        fname = base + '_harris_vocabulary.pkl'
-        with open(fname, 'rb') as f:
-            harris_vocabulary = pickle.load(f)
-
-        harris_query = ft.get_harris_features([args.query])[args.query]
-        image_words = harris_vocabulary.project(harris_query)
-        print 'Query database with an Harris histogram...'
-        harris_candidates = search.query_iw('harris', image_words)
-
-    if feature_active('colorhist'):
-        print 'Load colorhist features ..'
-        fname = base + '_colorhist.pkl'
-        # Load all colorhistogram features of our training data
-        with open(fname, 'rb') as f:
-            colorhist_features = pickle.load(f)
-
-        # Get colorhistogram for the query image
-        colorhist_query = ft.get_colorhist([args.query])[args.query]
-        print 'Query database with a colorhistogram'
-        # Compare the query colorhist with the dataset and retrieve an ordered list of candidates
-        colorhist_candidates = search.candidates_from_colorhist(colorhist_query, colorhist_features)
-
-    if feature_active('geo'):
-        print 'Load geo data ..'
-        fname = base + '_meta.pkl'
-        with open(fname, 'rb') as f:
-            geo_features = pickle.load(f)
-
-        metadata = ft.extract_metadata([args.query])[args.query]
-        if metadata_distance.has_geotag(metadata):
-            distances = []
-            for key in geo_features.keys():
-                candidate_metadata = geo_features[key]
-                if metadata_distance.has_geotag(candidate_metadata):
-                    distances.append((key, metadata_distance.compute_geographic_distance(metadata, candidate_metadata)))
-
-            geo_candidates = sorted(distances, key=lambda x: x[1])
-        else:
-            print 'Warning: query image has no geotag!'
-
-    # Visualizing Results
-    # ==================
-
-    # Plot query image
-    fig = plt.figure()
-    query_im = cv2.imread(args.query, cv2.IMREAD_COLOR)
-    # Convert colorspace from BGR to RGB since we're plotting with pyplot
-    query_im = cv2.cvtColor(query_im, cv2.COLOR_BGR2RGB)
-    plt.imshow(query_im)
-    plt.axis('off')
-    fig.canvas.set_window_title('Query Image')
-
+    # # Plot query image
+    # fig = plt.figure()
+    # query_im = query_image
+    # # Convert colorspace from BGR to RGB since we're plotting with pyplot
+    # query_im = cv2.cvtColor(query_im, cv2.COLOR_BGR2RGB)
+    # plt.imshow(query_im)
+    # plt.axis('off')
+    # fig.canvas.set_window_title('Query Image')
 
     def plot_results(im_list, title, distance, labels=None):
         fig = plt.figure()
         i = 1
         for im_name in im_list:
-            im_folder = args.images
+            im_folder = '../Images/inventionimages/'
             im_path = os.path.join(im_folder, os.path.basename(im_name))
             print(im_name)
-            geotag = ft.extract_exif(im_path)
-            print i, im_name, '\t\tgeotag:', geotag, '\tdist: ', distance[i - 1]
             im = cv2.imread(im_path, cv2.IMREAD_COLOR)
             im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
             plt.subplot(2, 5, i)
@@ -144,32 +71,25 @@ if __name__ == '__main__':
             i += 1
         fig.canvas.set_window_title(title)
 
-        # If candidates exists, show the top N candidates
+    def majority_vote(results):
+        monument_mv = []
+        direction_mv = []
 
+        for result in results:
+            subs = result.split('_')
+            monument_mv.append(subs[2])
+            direction_mv.append(subs[1])
 
+        return max(monument_mv, key=monument_mv.count), max(direction_mv, key=direction_mv.count)
+
+    # If candidates exists, show the top N candidates
     N = 10
 
-    if not sift_candidates == None:
+    for sift_candidates in sift_candidates_list:
         sift_winners = [search.get_filename(cand[1]) for cand in sift_candidates][0:N]
         sift_distances = [cand[0] for cand in sift_candidates][0:N]
-        plot_results(sift_winners, 'SIFT Results', sift_distances)
-
-    if not harris_candidates == None:
-        harris_winners = [search.get_filename(cand[1]) for cand in harris_candidates][0:N]
-        harris_distances = [cand[0] for cand in harris_candidates][0:N]
-        plot_results(harris_winners, 'Harris Results', harris_distances)
-
-    if not colorhist_candidates == None:
-        distances = colorhist_candidates[1][0:N]
-        filenames = colorhist_candidates[0][0:N]
-
-        plot_results(filenames, 'Colorhistogram Results', distances)
-
-    if not geo_candidates == None:
-        filenames = [x[0] for x in geo_candidates][0:N]
-        distances = [x[1] for x in geo_candidates][0:N]
-        plot_results([x[0] for x in geo_candidates][0:N], 'Geodistances Results', distances)
-
+        print majority_vote(sift_winners)
+        # plot_results(sift_winners, 'SIFT Results', sift_distances)
 
     # Add Key event to close the application with the 'q' or 'escape' key
     def onKey(event):
@@ -179,6 +99,18 @@ if __name__ == '__main__':
 
     plt.connect('key_release_event', onKey)
     plt.show()
+
+
+recognize_monument([cv2.imread('../Images/inventionimages/edt_SW_nk_z_w_toren2.jpg', cv2.IMREAD_COLOR),
+                    cv2.imread('../Images/inventionimages/ers_NE_rh_z_m_close.JPG', cv2.IMREAD_COLOR),
+                    cv2.imread('../Images/inventionimages/euk_S_oj_p_w_gracht_bij_oj.jpg', cv2.IMREAD_COLOR),
+                    cv2.imread('../Images/inventionimages/hoe_S_nk_z_m_kerk2.jpg', cv2.IMREAD_COLOR),
+                    cv2.imread('../Images/inventionimages/ing_SW_nk_m_church.jpg', cv2.IMREAD_COLOR)])
+
+
+
+
+
 
 
 
