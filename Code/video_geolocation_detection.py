@@ -2,10 +2,12 @@
 import argparse
 import cv2
 
+from video_landmark_estimation import video_landmark_estimation
 from video_tools import get_frame_count
 
 parser = argparse.ArgumentParser(description="Geo-location Predication via Landmarks for Videos")
 parser.add_argument("input_video", help="Path to input video")
+parser.add_argument("-n", help="Amount of sample frames", default=10)
 args = parser.parse_args()
 
 
@@ -22,9 +24,13 @@ class bcolors:
 
 
 cap = cv2.VideoCapture(args.input_video)
-if cap.isOpened():  # if video capturing has been initialized correctly
+if not cap.isOpened():
+    print bcolors.FAIL + 'please check your working directory and the path to your input video' + bcolors.ENDC
+else:  # if video capturing has been initialized correctly
+    print 'Input video:', bcolors.HEADER + args.input_video + bcolors.ENDC, '\n'
+
     frame_count = get_frame_count(args.input_video) + 1
-    n_sample = 10  # the amount of sample frames taken from the input video
+    n_sample = int(args.n)  # the amount of sample frames taken from the input video
     frames = [frame_count / (n_sample + 1) * i for i in range(1, n_sample + 1)]  # uniform distribution
 
     for frame in frames:
@@ -37,8 +43,19 @@ if cap.isOpened():  # if video capturing has been initialized correctly
             cv2.imshow('frame', gray)
             if cv2.waitKey(10) & 0xFF == ord('q'):
                 break
-else:
-    print bcolors.FAIL + 'please check your working directory and the path to your input video' + bcolors.ENDC
+
+    def image_query(sample_frames):
+        """
+        Place holder for the function of image query.
+        This function will be removed when its implementation is finished.
+        """
+        return ['Nieuwe Kerk', 'Stadhuis', 'Nieuwe Kerk', 'Oude Jan', 'Nieuwe Kerk'], ['SW', 'N', 'SW', 'E', 'SE']
+
+
+    landmark_frames, direction_frames = image_query(frames)
+    video_landmark, video_direction = video_landmark_estimation(landmark_frames, direction_frames)
+    print 'Estimated landmark:', bcolors.UNDERLINE + bcolors.OKCYAN + video_landmark + bcolors.ENDC
+    print 'Direction in which the video was taken:', bcolors.UNDERLINE + bcolors.OKCYAN + video_direction + bcolors.ENDC
 
 cap.release()
 cv2.destroyAllWindows()
