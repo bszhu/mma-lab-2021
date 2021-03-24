@@ -31,4 +31,13 @@ On Linux the OpenCV package might not be installed well directly. This can be re
 
 If following this installation guide didn't work for you please consider following the VM installation guide since using the VM will prove less troublesome.
 
-HI!
+## Seting up the DB
+
+1. Download inventionimages from the Google Drive
+2. Store inventionimages in the Images folder
+3. There are two ways to install the Database:
+Option 1: Download the database files from the Google Drive and place them under /Code/db/
+Option 2: Create the db from inventionimages using the following command in a terminal in /Code and in the conda environment: python dbt.py -d invention_sift_DB sift ../Images/inventionimages/
+
+
+There are 2 ways:
