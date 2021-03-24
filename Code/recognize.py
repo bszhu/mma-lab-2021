@@ -5,7 +5,7 @@ import cv2
 import matplotlib.pyplot as plt
 import image_search
 import os.path
-
+import time
 
 # Command line parsing is handled by the ArgumentParser object
 
@@ -16,10 +16,12 @@ def recognize_monument(query_images):
     print '================================\n'
     search = image_search.Searcher('db/invention_sift_DB.db')
     print 'Loading SIFT vocabulary ...'
+    start_time = time.time()
     fname = 'db/invention_sift_DB_sift_vocabulary.pkl'
     # Load the vocabulary to project the features of our query images on
     with open(fname, 'rb') as f:
         sift_vocabulary = pickle.load(f)
+    print 'Loading SIFT vocabulary took', time.time() - start_time, 's'
     print 'Computing SIFT features per query image ...'
     sift = cv2.xfeatures2d.SIFT_create()
     sift_queries = []

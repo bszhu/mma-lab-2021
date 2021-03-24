@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import argparse
 import cv2
+import time
 
 from recognize import recognize_monument
 from video_landmark_estimation import video_landmark_estimation
@@ -20,6 +21,7 @@ class bcolors:
 
 
 def geolocation_detection(input_video, sample_amount):
+    start_time = time.time()
     cap = cv2.VideoCapture(input_video)
     if not cap.isOpened():
         print bcolors.FAIL + 'please check your working directory and the path to your input video' + bcolors.ENDC
@@ -47,9 +49,10 @@ def geolocation_detection(input_video, sample_amount):
         video_landmark, video_direction = video_landmark_estimation(landmark_frames, direction_frames)
         print 'Estimated landmark:', bcolors.UNDERLINE + bcolors.OKCYAN + video_landmark + bcolors.ENDC
         print 'Direction in which the video was taken:', bcolors.UNDERLINE + bcolors.OKCYAN + video_direction + bcolors.ENDC
-
+        print 'Process Duration:', bcolors.UNDERLINE + bcolors.OKCYAN + str(time.time() - start_time) + bcolors.ENDC, "s"
     cap.release()
     cv2.destroyAllWindows()
+    return video_landmark, video_direction
 
 
 if __name__ == '__main__':
