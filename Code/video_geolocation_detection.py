@@ -2,6 +2,7 @@
 import argparse
 import cv2
 
+from recognize import recognize_monument
 from video_landmark_estimation import video_landmark_estimation
 from video_tools import get_frame_count
 
@@ -31,28 +32,22 @@ else:  # if video capturing has been initialized correctly
 
     frame_count = get_frame_count(args.input_video) + 1
     n_sample = int(args.n)  # the amount of sample frames taken from the input video
-    frames = [frame_count / (n_sample + 1) * i for i in range(1, n_sample + 1)]  # uniform distribution
+    frames_indices = [frame_count / (n_sample + 1) * i for i in range(1, n_sample + 1)]  # uniform distribution
 
-    for frame in frames:
-        cap.set(cv2.CAP_PROP_POS_FRAMES, frame)
+    sample_frames = list()
+    for frame_id in frames_indices:
+        cap.set(cv2.CAP_PROP_POS_FRAMES, frame_id)
         ret, frame = cap.read()
         if ret:  # if frame is read correctly
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            sample_frames.append(frame)
+            # gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            #
+            # # show the captured frames
+            # cv2.imshow('frame', gray)
+            # if cv2.waitKey(10) & 0xFF == ord('q'):
+            #     break
 
-            # show the captured frames
-            cv2.imshow('frame', gray)
-            if cv2.waitKey(10) & 0xFF == ord('q'):
-                break
-
-    def image_query(sample_frames):
-        """
-        Place holder for the function of image query.
-        This function will be removed when its implementation is finished.
-        """
-        return ['Nieuwe Kerk', 'Stadhuis', 'Nieuwe Kerk', 'Oude Jan', 'Nieuwe Kerk'], ['SW', 'N', 'SW', 'E', 'SE']
-
-
-    landmark_frames, direction_frames = image_query(frames)
+    landmark_frames, direction_frames = recognize_monument(sample_frames)
     video_landmark, video_direction = video_landmark_estimation(landmark_frames, direction_frames)
     print 'Estimated landmark:', bcolors.UNDERLINE + bcolors.OKCYAN + video_landmark + bcolors.ENDC
     print 'Direction in which the video was taken:', bcolors.UNDERLINE + bcolors.OKCYAN + video_direction + bcolors.ENDC

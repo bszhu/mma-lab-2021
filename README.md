@@ -38,6 +38,3 @@ If following this installation guide didn't work for you please consider followi
 3. There are two ways to install the Database:
 Option 1: Download the database files from the Google Drive and place them under /Code/db/
 Option 2: Create the db from inventionimages using the following command in a terminal in /Code and in the conda environment: python dbt.py -d invention_sift_DB sift ../Images/inventionimages/
-
-
-There are 2 ways:
