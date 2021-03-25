@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import image_search
 import os.path
 import time
+import numpy as np
 
 # Command line parsing is handled by the ArgumentParser object
 
@@ -75,8 +76,15 @@ def recognize_monument(query_images):
             subs = result.split('_')
             monument_mv.append(subs[2])
             direction_mv.append(subs[1])
+            
+        monument_mv = np.array(monument_mv)
+        direction_mv = np.array(direction_mv)
+        
+        monument = np.unique(monument_mv)[-1]
+        relevant_directions = direction_mv[monument_mv == monument]
+        m_direction = np.unique(relevant_directions)[-1]
 
-        return max(monument_mv, key=monument_mv.count), max(direction_mv, key=direction_mv.count)
+        return monument, m_direction
 
     # If candidates exists, show the top N candidates
     N = 10
