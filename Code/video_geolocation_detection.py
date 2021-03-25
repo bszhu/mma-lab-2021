@@ -51,7 +51,7 @@ def geolocation_detection(input_video, sample_amount):
         print 'Direction in which the video was taken:', bcolors.UNDERLINE + bcolors.OKCYAN + video_direction + bcolors.ENDC
         print 'Process Duration:', bcolors.UNDERLINE + bcolors.OKCYAN + str(time.time() - start_time) + bcolors.ENDC, "s"
     cap.release()
-    cv2.destroyAllWindows()
+    # cv2.destroyAllWindows()
     return video_landmark, video_direction
 
 
