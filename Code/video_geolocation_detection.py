@@ -20,7 +20,7 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 
-def geolocation_detection(input_video, sample_amount, top_n_sift):
+def geolocation_detection(input_video, sample_amount, top_n_sift, sift_vocabulary):
     start_time = time.time()
     cap = cv2.VideoCapture(input_video)
     if not cap.isOpened():
@@ -45,7 +45,7 @@ def geolocation_detection(input_video, sample_amount, top_n_sift):
                 # if cv2.waitKey(10) & 0xFF == ord('q'):
                 #     break
 
-        landmark_frames, direction_frames = recognize_monument(sample_frames, top_n_sift)
+        landmark_frames, direction_frames = recognize_monument(sample_frames, top_n_sift, sift_vocabulary)
         video_landmark, video_direction = video_landmark_estimation(landmark_frames, direction_frames)
         print 'Estimated landmark:', bcolors.UNDERLINE + bcolors.OKCYAN + video_landmark + bcolors.ENDC
         print 'Direction in which the video was taken:', bcolors.UNDERLINE + bcolors.OKCYAN + video_direction + bcolors.ENDC
@@ -62,4 +62,4 @@ if __name__ == '__main__':
     parser.add_argument("-t", help="The to results of sift to take into account", default=1)
     args = parser.parse_args()
 
-    geolocation_detection(input_video=args.input_video, sample_amount=args.n, top_n_sift=args.t)
+    geolocation_detection(input_video=args.input_video, sample_amount=args.n, top_n_sift=args.t, sift_vocabulary=None)

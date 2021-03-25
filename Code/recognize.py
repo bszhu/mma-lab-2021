@@ -8,11 +8,12 @@ import os.path
 import time
 import numpy as np
 
+
 # Command line parsing is handled by the ArgumentParser object
 
 # Starting point of the script
 # =======================================
-def recognize_monument(query_images, N):
+def recognize_monument(query_images, N, sift_vocabulary):
     """
     Given a list of images, this method will for every frame query the database containing the sift bag of words
     and return a list of monuments and directions based on the top-N results for every query.
@@ -22,16 +23,18 @@ def recognize_monument(query_images, N):
     :param N: The amount of query results we want to take into account
     :return: A list of landmarks and a list of directions
     """
+
     print 'Monument Recognition Tool'
     print '================================\n'
     search = image_search.Searcher('db/invention_sift_DB.db')
-    print 'Loading SIFT vocabulary ...'
-    start_time = time.time()
-    fname = 'db/invention_sift_DB_sift_vocabulary.pkl'
-    # Load the vocabulary to project the features of our query images on
-    with open(fname, 'rb') as f:
-        sift_vocabulary = pickle.load(f)
-    print 'Loading SIFT vocabulary took', time.time() - start_time, 's'
+    if sift_vocabulary is None:
+        print 'Loading SIFT vocabulary ...'
+        start_time = time.time()
+        fname = 'db/invention_sift_DB_sift_vocabulary.pkl'
+        # Load the vocabulary to project the features of our query images on
+        with open(fname, 'rb') as f:
+            sift_vocabulary = pickle.load(f)
+        print 'Loading SIFT vocabulary took', time.time() - start_time, 's'
     print 'Computing SIFT features per query image ...'
     sift = cv2.xfeatures2d.SIFT_create()
     sift_queries = []
