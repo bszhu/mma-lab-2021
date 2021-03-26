@@ -43,7 +43,7 @@ def score(test_videos_path):
         gt_landmark = vid_name[0]
         gt_direction = vid_name[1]
 
-        video_landmark, video_direction = geolocation_detection(video, 90, 5, sift_vocabulary)
+        video_landmark, video_direction = geolocation_detection(video, 30, 1, sift_vocabulary)
         # print "Ground truth:", gt_landmark, gt_direction
         # print "System results:", video_landmark, video_direction
         if gt_landmark == video_landmark:
