@@ -1,5 +1,5 @@
 # TU Delft CSE2230 Muleimedia Analysis - Invention Assignment
-In this assignment, we created a simple system that uses the presence of landmarks in a video to determine the geo-location at which a video was recorded. The application takes a video as an input, and outputs the location of the video.
+In this assignment, we created a simple system that uses the presence of landmarks in a video to determine the geo-location at which a video was recorded. The application takes a video as an input, and outputs the location of the video. Only the 3 landmarks in Delft, the Nieuwe Kerk, the Stadhuis and the Oude Jan, are considered.
 
 ## How to install
 Firstly clone the repository by the command: `git clone https://github.com/bszhu/mma-lab-2021.git`
