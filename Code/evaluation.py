@@ -9,6 +9,13 @@ types = list('*.MOV')
 
 
 def score(test_videos_path):
+    """
+    Evaluation method of the geomatch system
+
+    :param test_videos_path: The path containing the videos for evaluation, the title of the videos should
+    contain the landmark (ll) and the direction (dd). Format : ll_dd_xx.MOV (xx --> does not matter)
+    :return: Landmark and direction scores are outputted to the command line
+    """
     print "System Evaluation"
     print "================="
     video_list = []
@@ -36,7 +43,7 @@ def score(test_videos_path):
         gt_landmark = vid_name[0]
         gt_direction = vid_name[1]
 
-        video_landmark, video_direction = geolocation_detection(video, 30, 5, sift_vocabulary)
+        video_landmark, video_direction = geolocation_detection(video, 90, 5, sift_vocabulary)
         # print "Ground truth:", gt_landmark, gt_direction
         # print "System results:", video_landmark, video_direction
         if gt_landmark == video_landmark:

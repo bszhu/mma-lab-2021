@@ -21,12 +21,16 @@ def recognize_monument(query_images, N, sift_vocabulary):
 
     :param query_images: The frames for which we want to estimate the landmark and the direction
     :param N: The amount of query results we want to take into account
+    :param sift_vocabulary: The sift vocabulary (bag of words) to be used to query with, if unspecified (=None),
+    the system will use the local one.
     :return: A list of landmarks and a list of directions
     """
 
     print 'Monument Recognition Tool'
     print '================================\n'
     search = image_search.Searcher('db/invention_sift_DB.db')
+
+    # Load sift vocabulary if needed
     if sift_vocabulary is None:
         print 'Loading SIFT vocabulary ...'
         start_time = time.time()
@@ -80,6 +84,7 @@ def recognize_monument(query_images, N, sift_vocabulary):
             i += 1
         fig.canvas.set_window_title(title)
 
+    # Majority voting to determine which landmark and direction is the most probable
     def majority_vote(results):
         monument_mv = []
         direction_mv = []
@@ -102,6 +107,7 @@ def recognize_monument(query_images, N, sift_vocabulary):
     landmarks = list()
     directions = list()
 
+    # Select the N best sift results
     for sift_candidates in sift_candidates_list:
         sift_winners = [search.get_filename(cand[1]) for cand in sift_candidates][0:N]
         sift_distances = [cand[0] for cand in sift_candidates][0:N]
